@@ -56,21 +56,21 @@ func (self *SelectBox) HandleEvent(event *Event, view *View) {
 				self.selectedIndex = 0
 			}
 			view.Modified()
-			ClearEvent(event)
+			event.SetProcessed()
 		case KeyArrowUp:
 			self.selectedIndex--
 			if self.selectedIndex < 0 {
 				self.selectedIndex = len(self.items) - 1
 			}
 			view.Modified()
-			ClearEvent(event)
+			event.SetProcessed()
 		case KeyEnter:
 			self.handleSelectItem(view)
-			ClearEvent(event)
+			event.SetProcessed()
 		case KeyEsc:
 			if view.isExecuting() {
 				view.StopExecuting(ExecutingResult{CmdCancel, nil})
-				ClearEvent(event)
+				event.SetProcessed()
 			}
 		}
 	case EvMouse:
@@ -88,7 +88,7 @@ func (self *SelectBox) handleClick(event *Event, view *View) {
 		return
 	}
 	self.selectedIndex = my - 2
-	ClearEvent(event)
+	event.SetProcessed()
 	if event.DoubleClick {
 		self.handleSelectItem(view)
 	} else {

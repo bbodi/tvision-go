@@ -3,12 +3,12 @@ package tvision
 type Cmd int
 
 const (
-	CmdNothing Cmd = -1
-	CmdQuit        = iota
-	CmdCancel      = iota
-	CmdOk          = iota
+	CmdNothing Cmd = iota
+	CmdQuit
+	CmdCancel
+	CmdOk
 
-	CmdForUserApp = iota
+	CmdForUserApp
 )
 
 type EventType int
@@ -23,6 +23,7 @@ const (
 	EvKeyRepeat
 	EvLostFocus
 	EvGetFocus
+	EvTick
 )
 
 type Key uint16
@@ -77,4 +78,11 @@ type Event struct {
 	Key                      Key
 	Mod                      Modifier
 	Data                     interface{}
+}
+
+func (event *Event) SetProcessed() {
+	if event.Type == EvGetFocus || event.Type == EvLostFocus || event.Type == EvTick {
+		panic("ClearEvent(focus)")
+	}
+	event.Type = EvNothing
 }

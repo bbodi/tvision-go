@@ -4,6 +4,7 @@ import (
 	//	"fmt"
 	"github.com/DeedleFake/sdl"
 	"github.com/DeedleFake/sdl/ttf"
+	"log"
 	"time"
 	"unicode/utf8"
 )
@@ -22,6 +23,7 @@ type SdlEngine struct {
 	doubleClickDelay                   time.Duration
 	nextTickWhileDoubleClickCouldOccur *time.Time
 	lastEvent                          *sdl.Event
+	ticker                             *time.Ticker
 }
 
 type sdlFont struct {
@@ -31,7 +33,8 @@ type sdlFont struct {
 
 func (self *SdlEngine) Init(w, h int, fontSize Pixel) {
 	DefaultFontSize = fontSize
-	self.doubleClickDelay, _ = time.ParseDuration("500ms")
+	self.ticker = time.NewTicker(100 * time.Millisecond)
+	self.doubleClickDelay = 500 * time.Millisecond
 	self.fonts = make(map[Pixel]*sdlFont)
 	err := ttf.Init()
 	if err != nil {
@@ -289,11 +292,21 @@ func (self *SdlEngine) Size() (int, int) {
 
 func (self *SdlEngine) PollEvent() *Event {
 	for {
-		sdlEvent := self.readSdlEvent()
-		self.lastEvent = sdlEvent
-		event := self.processSdlEvent(sdlEvent)
-		if event != nil {
-			return event
+		select {
+		case t, ok := <-self.ticker.C:
+			if ok == false {
+				panic(ok)
+			}
+			log.Println("Time Event ", t, ", ", ok)
+			//return &Event{Type: EvTick}
+		default:
+			log.Println("SDL Event")
+			sdlEvent := self.readSdlEvent()
+			self.lastEvent = sdlEvent
+			event := self.processSdlEvent(sdlEvent)
+			if event != nil {
+				return event
+			}
 		}
 	}
 }

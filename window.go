@@ -56,7 +56,7 @@ func (self *Window) HandleEvent(event *Event, view *View) {
 		switch event.Key {
 		case KeyTab:
 			view.NextView()
-			ClearEvent(event)
+			event.SetProcessed()
 			view.Modified()
 		}
 	case EvMouse:
@@ -66,7 +66,7 @@ func (self *Window) HandleEvent(event *Event, view *View) {
 
 func (self *Window) handleClick(view *View, event *Event) {
 	if clickedInFontChange(view, event.LocalMouseX, event.LocalMouseY) && self.Resizeable {
-		ClearEvent(event)
+		event.SetProcessed()
 		boxView, box := CreateSelectBox("Fonts")
 		box.AddItem(14, CmdOk, 14)
 		box.AddItem(16, CmdOk, 16)

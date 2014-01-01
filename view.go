@@ -67,13 +67,6 @@ type Widget interface {
 	HandleEvent(*Event, *View)
 }
 
-func ClearEvent(event *Event) {
-	if event.Type == EvGetFocus || event.Type == EvLostFocus {
-		panic("ClearEvent(focus)")
-	}
-	event.Type = EvNothing
-}
-
 func (self *View) Hidden() bool {
 	return self.hidden
 }

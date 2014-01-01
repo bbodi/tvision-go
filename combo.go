@@ -17,6 +17,8 @@ type ComboBox struct {
 	Editable              bool
 	cursorPos             int
 	drawBuffer            *DrawBuffer
+	toggleShowCursorTicks int
+	showCursor            bool
 }
 
 func CreateComboBox(w int) (*View, *ComboBox) {
@@ -46,6 +48,18 @@ func (self *ComboBox) HandleEvent(event *Event, view *View) {
 		if self.opened {
 			self.close(view)
 		}
+	case EvGetFocus:
+		self.toggleShowCursorTicks = 10
+	case EvTick:
+		if view.focused == false {
+			return
+		}
+		self.toggleShowCursorTicks--
+		if self.toggleShowCursorTicks <= 0 {
+			self.toggleShowCursorTicks = 10
+			self.showCursor = !self.showCursor
+			view.Modified()
+		}
 	}
 }
 
@@ -55,24 +69,24 @@ func (self *ComboBox) handleKey(view *View, event *Event) {
 		if self.opened {
 			self.close(view)
 		}
-		ClearEvent(event)
+		event.SetProcessed()
 		return
 	case KeyArrowDown:
 		self.handleDownKey(view)
-		ClearEvent(event)
+		event.SetProcessed()
 		return
 	case KeyArrowUp:
 		self.handleUpKey(view)
-		ClearEvent(event)
+		event.SetProcessed()
 		return
 	case KeyEnter:
 		self.handleEnter(view)
-		ClearEvent(event)
+		event.SetProcessed()
 		return
 	case KeyTab:
 		if self.opened {
 			self.handleSelect(view)
-			ClearEvent(event)
+			event.SetProcessed()
 		}
 		return
 	}
@@ -85,7 +99,7 @@ func (self *ComboBox) handleKey(view *View, event *Event) {
 	ch := event.Ch
 	self.input = self.input + string(ch)
 	view.Modified()
-	ClearEvent(event)
+	event.SetProcessed()
 }
 
 func (self *ComboBox) handleEnter(view *View) {
@@ -113,12 +127,20 @@ func (self *ComboBox) Draw(view *View) *DrawBuffer {
 	if self.opened == false {
 		self.drawBuffer.SetCh(w-1, 0, '▼')
 		self.drawCurrentItem(view)
+		self.drawCursor(view)
 	} else {
 		self.drawBuffer.SetCh(w-1, 0, '▲')
 		self.drawCurrentItem(view)
 		self.drawItems(view, itemsToString(self.items), self.drawBuffer)
 	}
 	return self.drawBuffer
+}
+
+func (self *ComboBox) drawCursor(view *View) {
+	if self.showCursor == false {
+		return
+	}
+	self.drawBuffer.SetCh(self.cursorPos, 0, '_')
 }
 
 func (self *ComboBox) drawCurrentItem(view *View) {
